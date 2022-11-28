@@ -96,6 +96,13 @@
             border-bottom: 1px solid #ddd;
         }
 
+        .todo-item.checked .todo {
+            font-style: italic;
+            text-decoration: line-through;
+            color: lightgray;
+        }
+
+        /*이걸 좀 어떻게 바꿔야할 듯*/
         .todo-item:hover .delBtn {
             opacity: 1;
         }
@@ -119,12 +126,6 @@
             font-size: 1.3rem;
             padding: 0 1rem;
             width: 80%;
-        }
-
-        .todo-item.checked .todo {
-            font-style: italic;
-            text-decoration: line-through;
-            color: lightgray;
         }
 
         .delBtn {
@@ -191,38 +192,34 @@
         $(document).ready(function () {
             show_todo();
         });
+        $("#todo").keydown(function (key) {
+                if (key.keyCode == 13) {
+                    show_todo()
+                }
+            })
 
         function show_todo() {
             $.ajax({
-                type: "get",
-                url: "/todo",
-                data: {},
-                success: function (response) {
+                type:"GET",
+                url:"/todo",
+                data:{},
+                success: function (response){
                     let rows = response['todos']
-                    for (let i = 0; i < rows.length; i++) {
+                    for (let i = 0; i<rows.length; i++){
                         let todo = rows[i]['todo']
-                        let done = rows[i]['done']
 
-                        let temp_html = ``
-                        if (done == 0) {
-                            temp_html = `
-                            <li class="todo-item checked">
-                              <div class="checkbox">✔</div>
+                        let temp_html = `
+                            <li class="todo-item">
+                              <div class="checkbox"></div>
                               <div class="todo">${todo}</div>
                               <button class="delBtn">x</button>
                             </li>`
-                        } else temp_html = `
-                        <li class="todo-item">
-                           <div class="checkbox"></div>
-                           <div class="todo">${todo}</div>
-                           <button class="delBtn">x</button>
-                        </li>
-                        `
                         $('#todo_list').append(temp_html)
                     }
                 }
             })
         }
+
         function save_todo() {
             let todo = $('#todo').val()
 
@@ -236,19 +233,30 @@
                 }
             })
         }
+
+        function done_todo(num) {
+            $.ajax({
+                type: "POST",
+                url: "/todo/done",
+                data: {num_give: num},
+                success: function (response) {
+                    alert(response["msg"])
+                    window.location.reload()
+                }
+            })
+        }
+    //    완료된 할일은 temp_html에서 체크박스 란을 좌클릭 시 완료되는 것으로 바뀌는 것을 목적으로 코드를 짜야한다.
     </script>
 
 </head>
 <body>
 <div class="todo-wrapper">
-    <div class="todo-title">todos</div>
+    <div class="todo-title">Todos</div>
     <div class="todo-box">
-
         <div class="todo-input-box">
-            <button onclick="save_todo()" class="complete-all-btn">✔</button>
-            <input id="todo" type="text" class="todo-input" placeholder="해야 할 일을 입력해주세요.">
+            <button class="complete-all-btn">✔</button>
+            <input onkeyup="save_todo()" id="todo" type="text" class="todo-input" placeholder="해야 할 일을 입력해주세요.">
         </div>
-
         <ul id="todo_list" class="todo-list">
 
             <li class="todo-item checked">

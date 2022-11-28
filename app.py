@@ -17,15 +17,16 @@ def home():
 def todo_post():
     todo_receive = request.form['todo_give']
 
-    doc = {
-        'todo': todo_receive,
-        'done': 0
-    }
+    todo_list = list(db.todo.find({}, {'_id':False}))
+    count = len(todo_list) + 1
 
+    doc = {
+        'num' : count,
+        'todo': todo_receive,
+    }
     db.todo.insert_one(doc)
 
     return jsonify({'msg' : '할 일 등록'})
-
 @app.route('/todo', methods=["GET"])
 def todo_get():
     todo_list = list(db.todo.find({}, {'_id':False}))
