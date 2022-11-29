@@ -96,7 +96,7 @@
             border-bottom: 1px solid #ddd;
         }
 
-        .todo-item.checked .todo {
+        .todo-item.done .todo {
             font-style: italic;
             text-decoration: line-through;
             color: lightgray;
@@ -117,7 +117,7 @@
             text-align: center;
         }
 
-        .todo-item.checked .checkbox {
+        .todo-item.done .checkbox {
             border: 2px solid darkgray;
             color: green;
         }
@@ -192,11 +192,6 @@
         $(document).ready(function () {
             show_todo();
         });
-        $("#todo").keydown(function (key) {
-                if (key.keyCode == 13) {
-                    show_todo()
-                }
-            })
 
         function show_todo() {
             $.ajax({
@@ -207,22 +202,40 @@
                     let rows = response['todos']
                     for (let i = 0; i<rows.length; i++){
                         let todo = rows[i]['todo']
+                        let num = rows[i]['num']
+                        let done = rows[i]['done']
 
-                        let temp_html = `
-                            <li class="todo-item">
-                              <div class="checkbox"></div>
+                        let temp_html = ``
+                        if (done == 0) {
+                            temp_html =
+                            `<li class="todo-item">
+                              <div onclick="done_todo(${num})" class="checkbox"></div>
                               <div class="todo">${todo}</div>
-                              <button class="delBtn">x</button>
+                              <button onclick="del_todo(${num})" class="delBtn">x</button>
                             </li>`
+                        } else {
+                            temp_html = `
+                            <li class="todo-item done">
+                              <div class="checkbox">✔</div>
+                              <div class="todo">${todo}</div>
+                              <button onclick="del_todo(${num})" class="delBtn">x</button>
+                            </li>`
+                        }
                         $('#todo_list').append(temp_html)
                     }
                 }
             })
         }
 
+        function enterkey(){
+            if (window.event.keyCode == 13) {
+                save_todo();
+            }
+        }
+        //아니 근데 왜 enterkey(key){if (key.keyCode == 13){save_todo()}}는 왜 안됨??
+        //이해를 못하겠네
         function save_todo() {
             let todo = $('#todo').val()
-
             $.ajax({
                 type: "POST",
                 url: "/todo",
@@ -245,7 +258,18 @@
                 }
             })
         }
-    //    완료된 할일은 temp_html에서 체크박스 란을 좌클릭 시 완료되는 것으로 바뀌는 것을 목적으로 코드를 짜야한다.
+
+        function del_todo(num){
+            $.ajax({
+                type:"POST",
+                url:"/todo/del",
+                data:{num_give: num},
+                success: function (response){
+                    alert(response["msg"])
+                    window.location.reload()
+                }
+            })
+        }
     </script>
 
 </head>
@@ -255,27 +279,22 @@
     <div class="todo-box">
         <div class="todo-input-box">
             <button class="complete-all-btn">✔</button>
-            <input onkeyup="save_todo()" id="todo" type="text" class="todo-input" placeholder="해야 할 일을 입력해주세요.">
+            <input onkeyup="enterkey()" id="todo" type="text" class="todo-input" placeholder="해야 할 일을 입력해주세요.">
         </div>
         <ul id="todo_list" class="todo-list">
 
-            <li class="todo-item checked">
+            <li class="todo-item done">
                 <div class="checkbox">✔</div>
-                <div class="todo">저녁 치킨 먹기</div>
+                <div class="todo">app.py 간단하게 만들기</div>
                 <button class="delBtn">x</button>
             </li>
             <!--완료된 할 일-->
             <li class="todo-item">
                 <div class="checkbox"></div>
-                <div class="todo">호주에서 스카이다이빙 하기</div>
+                <div class="todo">저녁 치킨 먹기</div>
                 <button class="delBtn">x</button>
             </li>
             <!--해야할 할 일-->
-            <li class="todo-item">
-                <div class="checkbox"></div>
-                <div class="todo">취직 성공하기!</div>
-                <button class="delBtn">x</button>
-            </li>
 
         </ul>
         <div class="todo-bottom">
