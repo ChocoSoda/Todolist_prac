@@ -102,7 +102,6 @@
             color: lightgray;
         }
 
-        /*이걸 좀 어떻게 바꿔야할 듯*/
         .todo-item:hover .delBtn {
             opacity: 1;
         }
@@ -193,6 +192,13 @@
             show_todo();
         });
 
+        $(document).on("dblclick", "", function (){
+            var value = $(this).text();
+            var input = "<input type='text' class='todo-item' value='"+value+"'>"
+            $(this).html(input);
+        })
+        //이거는 왠지 모르겠는데 안되는 듯?
+
         function show_todo() {
             $.ajax({
                 type:"GET",
@@ -227,6 +233,28 @@
             })
         }
 
+        // function left_items(){
+        //     $.ajax({
+        //         type: "GET",
+        //         url : "/todo/left",
+        //         data: "",
+        //         success: function(response){
+        //             let rows = response['lefts']
+        //             for (let i = 0; i<rows.length; i++){
+        //                 let left = rows[i]['left']
+        //
+        //                 let temp_html = `
+        //                 <div id="left_item" class="left-items">${left} items left</div>
+        //                 `
+        //                 $('#left_item').append(temp_html)
+        //
+        //             }
+        //         }
+        //     })
+        // }
+
+        //일단 포기..
+
         function enterkey(){
             if (window.event.keyCode == 13) {
                 save_todo();
@@ -259,6 +287,18 @@
             })
         }
 
+        function all_done(){
+            $.ajax({
+                type:"POST",
+                url:"/todo/all",
+                data: {done_give : 0},
+                success : function (response){
+                    alert(response["msg"])
+                    window.location.reload()
+                }
+            })
+        }
+
         function del_todo(num){
             $.ajax({
                 type:"POST",
@@ -270,6 +310,29 @@
                 }
             })
         }
+
+        function del_all(){
+            $.ajax({
+                type: "POST",
+                url: "/todo/del_all",
+                data: {done_give : 1},
+                success: function (response){
+                    alert(response["msg"])
+                    window.location.reload()
+                }
+            })
+        }
+
+        function edit_input(){
+            $.ajax({
+                type : "POST",
+                url : "/todo/edit",
+                data : {todo_gives: todo},
+                success: function (response){
+                }
+            })
+        }
+    //    이걸 해야하네
     </script>
 
 </head>
@@ -278,18 +341,18 @@
     <div class="todo-title">Todos</div>
     <div class="todo-box">
         <div class="todo-input-box">
-            <button class="complete-all-btn">✔</button>
+            <button onclick="all_done()" class="complete-all-btn">✔</button>
             <input onkeyup="enterkey()" id="todo" type="text" class="todo-input" placeholder="해야 할 일을 입력해주세요.">
         </div>
         <ul id="todo_list" class="todo-list">
 
-            <li class="todo-item done">
+            <li ondblclick="edit_input()" class="todo-item done">
                 <div class="checkbox">✔</div>
                 <div class="todo">app.py 간단하게 만들기</div>
                 <button class="delBtn">x</button>
             </li>
             <!--완료된 할 일-->
-            <li class="todo-item">
+            <li ondblclick="edit_input()" class="todo-item">
                 <div class="checkbox"></div>
                 <div class="todo">저녁 치킨 먹기</div>
                 <button class="delBtn">x</button>
@@ -297,14 +360,14 @@
             <!--해야할 할 일-->
 
         </ul>
-        <div class="todo-bottom">
+        <div id="left_item"class="todo-bottom">
             <div class="left-items">3 items left</div>
             <div class="button-group">
                 <button class="show-all-btn selected" data-type="all">All</button>
                 <button class="show-active-btn" data-type="active">Active</button>
                 <button class="show-completed-btn" data-type="completed">Completed</button>
             </div>
-            <button class="clear-completed-btn">Clear Completed</button>
+            <button onclick="del_all()" class="clear-completed-btn">Clear Completed</button>
         </div>
     </div>
     <p class='info'>더블클릭 시 수정 가능!</p>
